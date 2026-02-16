@@ -47,7 +47,12 @@ public class DataInitializer {
 
     private void initializeRole(ERole roleName) {
         try {
-            if (roleRepository.findByName(roleName).isEmpty()) {
+            // Check if role exists. Use findAll to avoid NonUniqueResultException if data
+            // is already corrupt
+            boolean exists = roleRepository.findAll().stream()
+                    .anyMatch(r -> r.getName().equals(roleName));
+
+            if (!exists) {
                 Role role = new Role();
                 role.setName(roleName);
                 roleRepository.save(role);
@@ -64,7 +69,11 @@ public class DataInitializer {
         try {
             if (!userRepository.existsByUsername(username)) {
                 User user = new User(username, email, passwordEncoder.encode(password));
-                Role role = roleRepository.findByName(roleName)
+                // Use findAll().stream() to find the first matching role to avoid
+                // NonUniqueResultException
+                Role role = roleRepository.findAll().stream()
+                        .filter(r -> r.getName().equals(roleName))
+                        .findFirst()
                         .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
                 user.setRoles(Set.of(role));
                 userRepository.save(user);

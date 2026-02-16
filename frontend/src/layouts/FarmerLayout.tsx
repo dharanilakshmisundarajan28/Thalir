@@ -1,139 +1,321 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
-    Sprout,
-    LayoutDashboard,
-    CloudSun,
-    TrendingUp,
-    ShoppingCart,
-    Package,
-    MessageSquare,
-    Bell,
-    User,
-    LogOut,
-    Menu,
-    X
-} from 'lucide-react';
-import AuthService from '../services/auth.service';
+  Home,
+  ShoppingCart,
+  Leaf,
+  TrendingUp,
+  Package,
+  Settings,
+  Bell,
+  DollarSign,
+  Users,
+} from "lucide-react";
 
-const FarmerLayout = () => {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const location = useLocation();
-    const user = AuthService.getCurrentUser();
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 
-    const navItems = [
-        { name: 'Dashboard', path: '/farmer/dashboard', icon: <LayoutDashboard size={20} /> },
-        { name: 'Crop Recommend', path: '/farmer/crop-recommend', icon: <Sprout size={20} /> },
-        { name: 'Mandi Prices', path: '/farmer/mandi', icon: <TrendingUp size={20} /> },
-        { name: 'Weather', path: '/farmer/weather', icon: <CloudSun size={20} /> },
-        { name: 'Buy Fertilizers', path: '/farmer/fertilizers', icon: <ShoppingCart size={20} /> },
-        { name: 'My Products', path: '/farmer/my-products', icon: <Package size={20} /> },
-        { name: 'AI Assistant', path: '/farmer/chat', icon: <MessageSquare size={20} /> },
-    ];
+import DynamicWeather from "../components/dashboard/DynamicWeather";
+import RecentOrdersTable from "../components/dashboard/RecentOrdersTable";
 
-    const handleLogout = () => {
-        AuthService.logout();
-        window.location.href = '/login';
+export default function FarmerLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  const [openProfile, setOpenProfile] = useState(false);
+  const [range, setRange] = useState("6");
+
+  // ✅ close dropdown outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target as Node)
+      ) {
+        setOpenProfile(false);
+      }
     };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // 🌱 NAV
+  const navItems = [
+    { name: "Dashboard", path: "/farmer/dashboard", icon: Home },
+    { name: "Orders", path: "/farmer/orders", icon: ShoppingCart },
+    { name: "Crop", path: "/farmer/crop-recommendation", icon: Leaf },
+    { name: "Mandi Price", path: "/farmer/mandi-price", icon: TrendingUp },
+    { name: "Inventory", path: "/farmer/products", icon: Package },
+    { name: "Settings", path: "/farmer/settings", icon: Settings },
+  ];
+
+  // 🌱 KPI DATA
+  const kpis = [
+    {
+      title: "Total Revenue",
+      value: 425000,
+      prefix: "₹",
+      growth: "+12.5%",
+      icon: DollarSign,
+      color:
+        "bg-gradient-to-br from-green-200 via-emerald-200 to-green-300 text-emerald-900",
+    },
+    {
+      title: "Pending Orders",
+      value: 142,
+      growth: "+8.2%",
+      icon: ShoppingCart,
+      color:
+        "bg-gradient-to-br from-yellow-200 via-amber-200 to-yellow-300 text-amber-900",
+    },
+    {
+      title: "Active Vendors",
+      value: 12,
+      growth: "-2.4%",
+      icon: Users,
+      color:
+        "bg-gradient-to-br from-rose-200 via-pink-200 to-rose-300 text-rose-900",
+    },
+    {
+      title: "Total Products",
+      value: 84,
+      growth: "+15.3%",
+      icon: Package,
+      color:
+        "bg-gradient-to-br from-lime-200 via-green-200 to-emerald-300 text-green-900",
+    },
+  ];
+
+  // ✅ COUNTER
+  const Counter = ({ value, prefix = "" }: any) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+      let start = 0;
+      const duration = 900;
+      const step = Math.ceil(value / (duration / 16));
+
+      const timer = setInterval(() => {
+        start += step;
+        if (start >= value) {
+          setCount(value);
+          clearInterval(timer);
+        } else {
+          setCount(start);
+        }
+      }, 16);
+
+      return () => clearInterval(timer);
+    }, [value]);
 
     return (
-        <div className="flex h-screen bg-gray-50">
-
-            {/* Mobile Sidebar Overlay */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                    onClick={() => setIsSidebarOpen(false)}
-                />
-            )}
-
-            {/* Sidebar */}
-            <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-                <div className="h-full flex flex-col">
-                    {/* Logo */}
-                    <div className="h-16 flex items-center px-6 border-b border-gray-100">
-                        <Sprout className="h-8 w-8 text-green-600 mr-2" />
-                        <span className="text-xl font-bold text-gray-800">THALIR</span>
-                    </div>
-
-                    {/* Navigation */}
-                    <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                        {navItems.map((item) => {
-                            const isActive = location.pathname === item.path;
-                            return (
-                                <Link
-                                    key={item.path}
-                                    to={item.path}
-                                    className={`
-                    flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-colors
-                    ${isActive
-                                            ? 'bg-green-50 text-green-700'
-                                            : 'text-gray-600 hover:bg-gray-50 hover:text-green-600'}
-                  `}
-                                >
-                                    <span className="mr-3">{item.icon}</span>
-                                    {item.name}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-
-                    {/* User Profile Summary */}
-                    <div className="p-4 border-t border-gray-100">
-                        <div className="flex items-center mb-4 px-2">
-                            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">
-                                {user?.username?.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="ml-3 overflow-hidden">
-                                <p className="text-sm font-medium text-gray-900 truncate">{user?.username}</p>
-                                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center justify-center px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                        >
-                            <LogOut size={16} className="mr-2" />
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Top Header */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <button
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                    >
-                        <Menu size={24} />
-                    </button>
-
-                    <div className="flex items-center space-x-4 ml-auto">
-                        <button className="p-2 rounded-full text-gray-500 hover:bg-gray-100 relative">
-                            <Bell size={20} />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                        </button>
-                        <div className="h-8 w-px bg-gray-200 mx-2"></div>
-                        <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-700 hidden sm:block">Farmer Account</span>
-                            <User size={20} className="text-gray-500" />
-                        </div>
-                    </div>
-                </header>
-
-                {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-                    <Outlet />
-                </main>
-            </div>
-        </div>
+      <span>
+        {prefix}
+        {count.toLocaleString()}
+      </span>
     );
-};
+  };
 
-export default FarmerLayout;
+  // 🔥 REAL MONTH DATA
+  const chartData = useMemo(() => {
+    const monthsToShow = parseInt(range);
+    const today = new Date();
+
+    const data = [];
+
+    for (let i = monthsToShow - 1; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+
+      data.push({
+        month: d.toLocaleString("default", { month: "short" }),
+        revenue: Math.floor(20000 + Math.random() * 60000),
+      });
+    }
+
+    return data;
+  }, [range]);
+
+  const handleLogout = () => navigate("/");
+  const handleSettings = () => navigate("/farmer/settings");
+
+  const showDashboard = location.pathname.includes("dashboard");
+
+  return (
+    <div className="flex h-screen bg-slate-100">
+      {/* SIDEBAR */}
+      <aside className="w-64 bg-gradient-to-b from-slate-900 to-slate-950 text-white flex flex-col shadow-xl">
+        <div className="h-16 flex items-center px-6 text-xl font-bold tracking-widest border-b border-white/10">
+          THALIR
+        </div>
+
+        <nav className="flex flex-col p-4 gap-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-green-600 text-white shadow-lg"
+                    : "text-slate-300 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <Icon size={18} />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* MAIN */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* TOP BAR */}
+        <div className="flex items-center justify-between px-8 py-6">
+          <h1 className="text-2xl font-bold text-slate-800">
+            Welcome Rajesh 👋
+          </h1>
+
+          <div className="flex items-center gap-5 relative" ref={profileRef}>
+            <Bell className="text-slate-600" size={22} />
+
+            <div
+              onClick={() => setOpenProfile(!openProfile)}
+              className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold shadow-lg cursor-pointer"
+            >
+              FA
+            </div>
+
+            {openProfile && (
+              <div className="absolute right-0 top-14 w-44 bg-white rounded-xl shadow-xl border py-2 z-50">
+                <button
+                  onClick={handleSettings}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-slate-100"
+                >
+                  ⚙️ Settings
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 text-red-600"
+                >
+                  🚪 Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        <main className="px-8 pb-8 overflow-y-auto">
+          {showDashboard && (
+            <>
+              {/* KPI */}
+              <div className="grid gap-4 mb-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+                {kpis.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={index}
+                      className={`${item.color} p-4 rounded-xl shadow-md`}
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <Icon size={22} />
+                        <span
+                          className={`text-xs font-semibold ${
+                            item.growth.includes("-")
+                              ? "text-red-600"
+                              : "text-green-700"
+                          }`}
+                        >
+                          {item.growth}
+                        </span>
+                      </div>
+
+                      <h4 className="text-xs font-semibold opacity-80">
+                        {item.title}
+                      </h4>
+                      <p className="text-2xl font-extrabold mt-1">
+                        <Counter value={item.value} prefix={item.prefix || ""} />
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 🔥 MAIN GRID */}
+              <div className="grid grid-cols-1 xl:grid-cols-10 gap-6">
+                {/* LEFT 70% */}
+                <div className="xl:col-span-7 flex flex-col gap-6">
+                  {/* GRAPH — 30% HEIGHT */}
+                  <div className="bg-white rounded-2xl shadow p-6 h-[50vh]">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-800">
+                          Sales Performance
+                        </h3>
+                        <p className="text-sm text-slate-500">
+                          Revenue growth over time
+                        </p>
+                      </div>
+
+                      <select
+                        value={range}
+                        onChange={(e) => setRange(e.target.value)}
+                        className="border rounded-lg px-3 py-1 text-sm"
+                      >
+                        <option value="1">Last 1 Month</option>
+                        <option value="6">Last 6 Months</option>
+                        <option value="12">Last 12 Months</option>
+                      </select>
+                    </div>
+
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                        <YAxis hide />
+                        <Tooltip
+                          formatter={(v: any) => [
+                            `₹${v.toLocaleString()}`,
+                            "Revenue",
+                          ]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="revenue"
+                          stroke="#16a34a"
+                          strokeWidth={4}
+                          dot={{ r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* ✅ RECENT ORDERS — ONLY UNDER GRAPH */}
+                  <RecentOrdersTable />
+                </div>
+
+                {/* RIGHT 30% */}
+                <div className="xl:col-span-3">
+                  <DynamicWeather />
+                </div>
+              </div>
+            </>
+          )}
+
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}

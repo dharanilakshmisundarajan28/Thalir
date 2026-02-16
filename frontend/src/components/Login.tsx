@@ -30,6 +30,7 @@ const Login = () => {
         AuthService.login(data.username, data.password).then(
             (response) => {
                 const roles = response.roles;
+                console.log("Login Success! Response roles:", roles);
                 if (roles.includes("ROLE_FARMER")) {
                     navigate("/farmer/dashboard");
                 } else if (roles.includes("ROLE_ADMIN")) {
@@ -41,7 +42,6 @@ const Login = () => {
                 } else {
                     navigate("/profile");
                 }
-                window.location.reload();
             },
             (error) => {
                 const resMessage =

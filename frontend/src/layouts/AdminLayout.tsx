@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { Users, Shield, Settings, Activity, LogOut, LayoutDashboard } from 'lucide-react';
 import AuthService from '../services/auth.service';
 
@@ -6,9 +6,14 @@ const AdminLayout = () => {
     const location = useLocation();
     const user = AuthService.getCurrentUser();
 
+    // Guard: Redirect to landing page if no user or incorrect role
+    if (!user || !user.roles.includes("ROLE_ADMIN")) {
+        return <Navigate to="/" replace />;
+    }
+
     const handleLogout = () => {
         AuthService.logout();
-        window.location.href = '/login';
+        window.location.href = '/';
     };
 
     const navItems = [

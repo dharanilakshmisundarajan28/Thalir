@@ -1,0 +1,65 @@
+/* global.css - THALIR v4 SaaS Design System */
+
+:root {
+    /* Color Palette */
+    --bg-gray: #f5f6f8;
+    --white: #FFFFFF;
+    --primary-green: #10B981;
+    --green-hover: #059669;
+    --text-dark: #1F2937;
+    --text-gray: #6B7280;
+    --text-muted: #9CA3AF;
+    --border-gray: #F3F4F6;
+
+    /* Shadows */
+    --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+    --shadow-3d: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --shadow-active: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    --shadow-lift: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+    /* Radii */
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-dark);
+    -webkit-font-smoothing: antialiased;
+}
+
+.card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-gray);
+    padding: 1.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-green);
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--green-hover);
+}
+
+.link-green {
+    color: var(--primary-green);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.link-green:hover {
+    text-decoration: underline;
+}

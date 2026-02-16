@@ -1,13 +1,18 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, Navigate } from 'react-router-dom';
 import { ShoppingCart, Search, User, Sprout } from 'lucide-react';
 import AuthService from '../services/auth.service';
 
 const ConsumerLayout = () => {
     const user = AuthService.getCurrentUser();
 
+    // Guard: Redirect to landing page if no user or incorrect role
+    if (!user || !user.roles.includes("ROLE_CONSUMER")) {
+        return <Navigate to="/" replace />;
+    }
+
     const handleLogout = () => {
         AuthService.logout();
-        window.location.href = '/login';
+        window.location.href = '/';
     };
 
     return (
@@ -25,7 +30,7 @@ const ConsumerLayout = () => {
                             </Link>
                         </div>
 
-                        {/* Search Bar - Hidden on mobile for now */}
+                        {/* Search Bar */}
                         <div className="hidden md:flex flex-1 items-center justify-center px-8">
                             <div className="w-full max-w-lg relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

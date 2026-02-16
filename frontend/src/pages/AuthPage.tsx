@@ -1,11 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sprout } from 'lucide-react';
 import Login from '../components/Login';
 import Register from '../components/Register';
+import AuthService from '../services/auth.service';
 import '../styles/AuthPage.css';
 
 const AuthPage = () => {
     const [isSignUp, setIsSignUp] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const user = AuthService.getCurrentUser();
+        console.log("AuthPage: Session check:", user);
+        if (user && user.roles) {
+            const roles = user.roles;
+            if (roles.includes("ROLE_FARMER")) {
+                console.log("AuthPage: Redirecting to farmer dashboard");
+                navigate("/farmer/dashboard");
+            } else if (roles.includes("ROLE_ADMIN")) {
+                navigate("/admin/dashboard");
+            } else if (roles.includes("ROLE_CONSUMER")) {
+                navigate("/consumer/home");
+            } else if (roles.includes("ROLE_PROVIDER")) {
+                navigate("/provider/dashboard");
+            } else {
+                navigate("/profile");
+            }
+        }
+    }, [navigate]);
 
     return (
         <div className="auth-page-wrapper">
