@@ -6,3 +6,5 @@ numpy
 xgboost
 python-multipart
 requests
+httpx
+joblib
