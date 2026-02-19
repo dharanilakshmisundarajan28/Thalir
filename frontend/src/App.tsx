@@ -14,6 +14,10 @@ import ConsumerDashboard from "./pages/consumer/ConsumerDashboard";
 
 import ProviderLayout from "./layouts/ProviderLayout";
 import ProviderDashboard from "./pages/provider/ProviderDashboard";
+import Analytics from "./components/fertilizer/Analytics";
+import ProductManagement from "./components/fertilizer/ProductManagement";
+import OrderHistory from "./components/fertilizer/OrderHistory";
+import ProviderSettings from "./components/fertilizer/Settings";
 
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -42,7 +46,6 @@ const App = () => {
             <Route path="dashboard" element={<FarmerDashboard />} />
             <Route path="orders" element={<FarmerDashboard />} />
 
-            {/* ✅ REAL CROP PAGE */}
             <Route
               path="crop-recommendation"
               element={<CropRecommendation />}
@@ -97,8 +100,10 @@ const App = () => {
           <Route path="/provider" element={<ProviderLayout />}>
             <Route index element={<ProviderDashboard />} />
             <Route path="dashboard" element={<ProviderDashboard />} />
-            <Route path="inventory" element={<div>Inventory Page</div>} />
-            <Route path="orders" element={<div>Orders Page</div>} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="products" element={<ProductManagement />} />
+            <Route path="orders" element={<OrderHistory />} />
+            <Route path="settings" element={<ProviderSettings />} />
           </Route>
 
           {/* ================= ADMIN ================= */}
