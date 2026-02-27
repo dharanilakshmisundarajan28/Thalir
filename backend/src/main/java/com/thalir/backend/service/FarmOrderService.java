@@ -86,12 +86,14 @@ public class FarmOrderService {
 
     // ── CONSUMER: view & cancel own orders ──────────────────
 
+    @Transactional(readOnly = true)
     public Page<FarmOrderResponse> getMyOrders(String consumerUsername, int page, int size) {
         return orderRepository
                 .findByConsumerOrderByOrderedAtDesc(getUser(consumerUsername), PageRequest.of(page, size))
                 .map(this::toOrderResponse);
     }
 
+    @Transactional(readOnly = true)
     public FarmOrderResponse getMyOrder(String consumerUsername, Long orderId) {
         FarmOrder order = getOrder(orderId);
         if (!order.getConsumer().getUsername().equals(consumerUsername))
@@ -120,6 +122,7 @@ public class FarmOrderService {
 
     // ── FARMER: view received orders & update status ─────────
 
+    @Transactional(readOnly = true)
     public Page<FarmOrderResponse> getReceivedOrders(String farmerUsername, int page, int size) {
         return orderRepository
                 .findByFarmerOrderByOrderedAtDesc(getUser(farmerUsername), PageRequest.of(page, size))

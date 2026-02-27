@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/auth/";
+const API_URL = "/api/auth/";
 
 // Create a separate axios instance for auth endpoints (no interceptors)
 const authAxios = axios.create({
@@ -38,7 +38,7 @@ class AuthService {
 
     logout() {
         console.log("🔓 Logging out");
-        const logoutPromise = authAxios.post("logout").catch(() => {});
+        const logoutPromise = authAxios.post("logout").catch(() => { });
         localStorage.removeItem("user");
         return logoutPromise;
     }
@@ -51,14 +51,14 @@ class AuthService {
             password,
             role
         })
-        .then(response => {
-            console.log("✅ Signup successful");
-            return response;
-        })
-        .catch(error => {
-            console.error("❌ Signup failed:", error.response?.status, error.response?.data);
-            throw error;
-        });
+            .then(response => {
+                console.log("✅ Signup successful");
+                return response;
+            })
+            .catch(error => {
+                console.error("❌ Signup failed:", error.response?.status, error.response?.data);
+                throw error;
+            });
     }
 
     getCurrentUser() {

@@ -68,17 +68,20 @@ public class FertilizerProductService {
         productRepository.delete(product);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> getMyProducts(String sellerUsername) {
         User seller = getUserByUsername(sellerUsername);
         return productRepository.findBySeller(seller)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductResponse> getAllActiveProducts(int page, int size, String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
         return productRepository.findByIsActiveTrue(pageable).map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductResponse> getByCategory(String category, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
         return productRepository
@@ -86,11 +89,13 @@ public class FertilizerProductService {
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProductResponse> searchProducts(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return productRepository.searchByKeyword(keyword, pageable).map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(Long productId) {
         return toResponse(productRepository.findById(productId)
                 .filter(Fertilizerproduct::getIsActive)

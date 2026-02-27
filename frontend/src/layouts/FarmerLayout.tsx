@@ -11,7 +11,7 @@ import {
   DollarSign,
   Users,
   FileText,
-  Store, 
+  Store,
 } from "lucide-react";
 
 import {
@@ -146,7 +146,12 @@ export default function FarmerLayout() {
     return data;
   }, [range]);
 
-  const handleLogout = () => navigate("/");
+  // ✅ Fixed logout — removes "user" from localStorage then hard-redirects
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+
   const handleSettings = () => navigate("/farmer/settings");
 
   const showDashboard = location.pathname.includes("dashboard");
@@ -260,7 +265,7 @@ export default function FarmerLayout() {
               <div className="grid grid-cols-1 xl:grid-cols-10 gap-6">
                 {/* LEFT 70% */}
                 <div className="xl:col-span-7 flex flex-col gap-6">
-                  {/* GRAPH — 30% HEIGHT */}
+                  {/* GRAPH */}
                   <div className="bg-white rounded-2xl shadow p-6 h-[50vh]">
                     <div className="flex justify-between items-center mb-4">
                       <div>
@@ -305,7 +310,7 @@ export default function FarmerLayout() {
                     </ResponsiveContainer>
                   </div>
 
-                  {/* ✅ RECENT ORDERS — ONLY UNDER GRAPH */}
+                  {/* RECENT ORDERS */}
                   <RecentOrdersTable />
                 </div>
 

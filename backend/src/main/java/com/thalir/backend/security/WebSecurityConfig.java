@@ -12,11 +12,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.thalir.backend.security.services.UserDetailsServiceImpl; 
+import com.thalir.backend.security.services.UserDetailsServiceImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,23 +30,24 @@ public class WebSecurityConfig {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
-    // authentication entry point is handled by default; no JWT needed
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://127.0.0.1:5173",
+                "http://127.0.0.1:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
-        configuration.setAllowCredentials(true); // allow cookies for session-based auth
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Set-Cookie"));
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -64,68 +67,142 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Explicitly declare the SecurityContextRepository so Spring Security
+     * correctly saves the SecurityContext to the HTTP session after login.
+     */
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                // we use HTTP session for authentication; security context stored automatically
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                // Tell Spring Security to store/load the SecurityContext from the session
+                .securityContext(ctx -> ctx.securityContextRepository(securityContextRepository()))
                 .authorizeHttpRequests(auth -> auth
-                        // allow all OPTIONS (CORS preflight) on any path
+
+                        // ── CORS preflight ────────────────────────────────────────────
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ── Public ────────────────────────────────────────────────
-                        .requestMatchers("GET", "POST", "OPTIONS", "/api/auth/**").permitAll()
+                        // ── Auth endpoints (public) ───────────────────────────────────
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/test/**").permitAll()
 
-                        // ════════════════════════════════════════════════════════
+                        // ════════════════════════════════════════════════════════════
                         // FERTILIZER MARKETPLACE (Provider → Farmer)
-                        // ════════════════════════════════════════════════════════
+                        // ════════════════════════════════════════════════════════════
 
-                        // Products: GET is public, mutations need PROVIDER
-                        .requestMatchers("GET", "/api/fertilizer/products/**").permitAll()
-                        .requestMatchers("POST", "/api/fertilizer/products").hasRole("PROVIDER")
-                        .requestMatchers("PUT", "/api/fertilizer/products/**").hasRole("PROVIDER")
-                        .requestMatchers("PATCH", "/api/fertilizer/products/**").hasAnyRole("PROVIDER", "ADMIN")
-                        .requestMatchers("DELETE", "/api/fertilizer/products/**").hasAnyRole("PROVIDER", "ADMIN")
-                        .requestMatchers("GET", "/api/fertilizer/products/my").hasRole("PROVIDER")
+                        // Public: browse fertilizer products (no auth needed)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/fertilizer/products")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/fertilizer/products/search")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/fertilizer/products/category/**")
+                        .permitAll()
 
-                        // Cart: FARMER only
+                        // Provider: manage their own products
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/fertilizer/products/my")
+                        .hasRole("PROVIDER")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST,
+                                "/api/fertilizer/products")
+                        .hasRole("PROVIDER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT,
+                                "/api/fertilizer/products/**")
+                        .hasRole("PROVIDER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH,
+                                "/api/fertilizer/products/**")
+                        .hasAnyRole("PROVIDER", "ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE,
+                                "/api/fertilizer/products/**")
+                        .hasAnyRole("PROVIDER", "ADMIN")
+
+                        // Catch-all: any other GET on a specific product (by ID) — public
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/fertilizer/products/**")
+                        .permitAll()
+
+                        // Farmer: fertilizer cart
                         .requestMatchers("/api/fertilizer/cart/**").hasRole("FARMER")
 
-                        // Orders: FARMER routes first (more specific), then PROVIDER/ADMIN
+                        // Farmer: own fertilizer orders
                         .requestMatchers("/api/fertilizer/orders/checkout").hasRole("FARMER")
                         .requestMatchers("/api/fertilizer/orders/my/**").hasRole("FARMER")
-                        .requestMatchers("/api/fertilizer/orders/**").hasAnyRole("ADMIN", "PROVIDER")
 
-                        // ════════════════════════════════════════════════════════
+                        // Provider/Admin: view and update all fertilizer orders
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/fertilizer/orders")
+                        .hasAnyRole("ADMIN", "PROVIDER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH,
+                                "/api/fertilizer/orders/**")
+                        .hasAnyRole("ADMIN", "PROVIDER")
+
+                        // ════════════════════════════════════════════════════════════
                         // FARM MARKETPLACE (Farmer → Consumer)
-                        // ════════════════════════════════════════════════════════
+                        // ════════════════════════════════════════════════════════════
 
-                        // Products: GET is public, mutations need FARMER
-                        .requestMatchers("GET", "/api/farm/products/**").permitAll()
-                        .requestMatchers("POST", "/api/farm/products").hasRole("FARMER")
-                        .requestMatchers("PUT", "/api/farm/products/**").hasRole("FARMER")
-                        .requestMatchers("PATCH", "/api/farm/products/**").hasAnyRole("FARMER", "ADMIN")
-                        .requestMatchers("DELETE", "/api/farm/products/**").hasAnyRole("FARMER", "ADMIN")
-                        .requestMatchers("GET", "/api/farm/products/my").hasRole("FARMER")
+                        // Public: browse farm products
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/farm/products")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/farm/products/search")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/farm/products/category/**")
+                        .permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/farm/products/farmer/**")
+                        .permitAll()
 
-                        // Cart: CONSUMER only
+                        // Farmer: manage their own produce (/my must come before /**)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/farm/products/my")
+                        .hasRole("FARMER")
+                        .requestMatchers(org.springframework.http.HttpMethod.POST,
+                                "/api/farm/products")
+                        .hasRole("FARMER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PUT,
+                                "/api/farm/products/**")
+                        .hasRole("FARMER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH,
+                                "/api/farm/products/**")
+                        .hasAnyRole("FARMER", "ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE,
+                                "/api/farm/products/**")
+                        .hasAnyRole("FARMER", "ADMIN")
+
+                        // Catch-all: GET by ID is public
+                        .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                "/api/farm/products/**")
+                        .permitAll()
+
+                        // Consumer: farm cart
                         .requestMatchers("/api/farm/cart/**").hasRole("CONSUMER")
 
-                        // Orders: CONSUMER routes first, then FARMER
+                        // Consumer: own farm orders
                         .requestMatchers("/api/farm/orders/checkout").hasRole("CONSUMER")
                         .requestMatchers("/api/farm/orders/my/**").hasRole("CONSUMER")
+
+                        // Farmer: received orders and status updates
                         .requestMatchers("/api/farm/orders/received").hasRole("FARMER")
                         .requestMatchers("/api/farmer/orders").hasRole("FARMER")
-                        .requestMatchers("PATCH", "/api/farm/orders/*/status").hasRole("FARMER")
+                        .requestMatchers(org.springframework.http.HttpMethod.PATCH,
+                                "/api/farm/orders/**")
+                        .hasRole("FARMER")
 
-                        // ── Anything else requires authentication ─────────────────
+                        // ── Catch-all: everything else needs authentication ────────────
                         .anyRequest().authenticated());
 
         http.authenticationProvider(authenticationProvider());
-        // JWT filter removed; authentication handled via session
 
         return http.build();
     }

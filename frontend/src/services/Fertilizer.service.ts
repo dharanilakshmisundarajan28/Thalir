@@ -1,11 +1,11 @@
 // src/services/Fertilizer.service.ts
 
-const FERTILIZER_URL = "http://localhost:8080/api/fertilizer";
-const FARM_URL       = "http://localhost:8080/api/farm";
+const FERTILIZER_URL = "/api/fertilizer";
+const FARM_URL = "/api/farm";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type OrderStatus     = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 export type FarmOrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
 // Fertilizer (Provider -> Farmer)
@@ -109,36 +109,43 @@ export const productService = {
   getAll: (page = 0, size = 10, sortBy = "name"): Promise<Page<ProductResponse>> =>
     fetch(`${FERTILIZER_URL}/products?page=${page}&size=${size}&sortBy=${sortBy}`, {
       headers: getAuthHeaders(),
-      credentials: 'include' }).then(r => handleResponse(r)),
+      credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   search: (keyword: string, page = 0, size = 10): Promise<Page<ProductResponse>> =>
     fetch(`${FERTILIZER_URL}/products/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`, {
       headers: getAuthHeaders(),
-      credentials: 'include' }).then(r => handleResponse(r)),
+      credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getByCategory: (category: string, page = 0, size = 10): Promise<Page<ProductResponse>> =>
     fetch(`${FERTILIZER_URL}/products/category/${encodeURIComponent(category)}?page=${page}&size=${size}`, {
       headers: getAuthHeaders(),
-      credentials: 'include' }).then(r => handleResponse(r)),
+      credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getById: (id: number): Promise<ProductResponse> =>
     fetch(`${FERTILIZER_URL}/products/${id}`, { headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
 
   create: (data: ProductRequest): Promise<ProductResponse> =>
     fetch(`${FERTILIZER_URL}/products`, {
-      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data) }).then(r => handleResponse(r)),
+      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data)
+    }).then(r => handleResponse(r)),
 
   update: (id: number, data: ProductRequest): Promise<ProductResponse> =>
     fetch(`${FERTILIZER_URL}/products/${id}`, {
-      method: "PUT", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data) }).then(r => handleResponse(r)),
+      method: "PUT", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data)
+    }).then(r => handleResponse(r)),
 
   deactivate: (id: number): Promise<void> =>
     fetch(`${FERTILIZER_URL}/products/${id}/deactivate`, {
-      method: "PATCH", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      method: "PATCH", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   delete: (id: number): Promise<void> =>
     fetch(`${FERTILIZER_URL}/products/${id}`, {
-      method: "DELETE", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      method: "DELETE", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getMyProducts: (): Promise<ProductResponse[]> =>
     fetch(`${FERTILIZER_URL}/products/my`, { headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
@@ -150,48 +157,58 @@ export const cartService = {
 
   addItem: (productId: number, quantity: number): Promise<CartResponse> =>
     fetch(`${FERTILIZER_URL}/cart/items`, {
-      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify({ productId, quantity }) }).then(r => handleResponse(r)),
+      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify({ productId, quantity })
+    }).then(r => handleResponse(r)),
 
   updateItem: (cartItemId: number, quantity: number): Promise<CartResponse> =>
     fetch(`${FERTILIZER_URL}/cart/items/${cartItemId}?quantity=${quantity}`, {
-      method: "PUT", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      method: "PUT", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   removeItem: (cartItemId: number): Promise<CartResponse> =>
     fetch(`${FERTILIZER_URL}/cart/items/${cartItemId}`, {
-      method: "DELETE", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      method: "DELETE", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   clearCart: (): Promise<void> =>
     fetch(`${FERTILIZER_URL}/cart`, {
-      method: "DELETE", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      method: "DELETE", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 };
 
 export const orderService = {
   // FARMER: buy fertilizer from provider
   checkout: (data: CheckoutRequest): Promise<OrderResponse> =>
     fetch(`${FERTILIZER_URL}/orders/checkout`, {
-      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data) }).then(r => handleResponse(r)),
+      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data)
+    }).then(r => handleResponse(r)),
 
   // FARMER: own fertilizer orders  (/orders/my)
   getMyOrders: (page = 0, size = 10): Promise<Page<OrderResponse>> =>
     fetch(`${FERTILIZER_URL}/orders/my?page=${page}&size=${size}`, {
-      headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getMyOrder: (orderId: number): Promise<OrderResponse> =>
     fetch(`${FERTILIZER_URL}/orders/my/${orderId}`, {
-      headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   cancelOrder: (orderId: number): Promise<OrderResponse> =>
     fetch(`${FERTILIZER_URL}/orders/my/${orderId}/cancel`, {
-      method: "PATCH", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      method: "PATCH", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   // PROVIDER / ADMIN: all fertilizer orders  (/orders)
   getAllOrders: (page = 0, size = 20): Promise<Page<OrderResponse>> =>
     fetch(`${FERTILIZER_URL}/orders?page=${page}&size=${size}`, {
-      headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   updateStatus: (orderId: number, status: OrderStatus): Promise<OrderResponse> =>
     fetch(`${FERTILIZER_URL}/orders/${orderId}/status`, {
-      method: "PATCH", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify({ status }) }).then(r => handleResponse(r)),
+      method: "PATCH", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify({ status })
+    }).then(r => handleResponse(r)),
 
 
   // Role-aware helper — use this in OrderHistory component
@@ -211,34 +228,40 @@ export const farmProductService = {
   // Public / Consumer: browse
   getAll: (page = 0, size = 10, sortBy = "name"): Promise<Page<FarmProductResponse>> =>
     fetch(`${FARM_URL}/products?page=${page}&size=${size}&sortBy=${sortBy}`, {
-      headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   search: (keyword: string, page = 0, size = 10): Promise<Page<FarmProductResponse>> =>
     fetch(`${FARM_URL}/products/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`, {
-      headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getByCategory: (category: string, page = 0, size = 10): Promise<Page<FarmProductResponse>> =>
     fetch(`${FARM_URL}/products/category/${encodeURIComponent(category)}?page=${page}&size=${size}`, {
-      headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getByFarmer: (farmerId: number, page = 0, size = 10): Promise<Page<FarmProductResponse>> =>
     fetch(`${FARM_URL}/products/farmer/${farmerId}?page=${page}&size=${size}`, {
-      headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getById: (id: number): Promise<FarmProductResponse> =>
-    fetch(`${FARM_URL}/products/${id}`, { headers: getAuthHeaders() }).then(r => handleResponse(r)),
+    fetch(`${FARM_URL}/products/${id}`, { headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
 
   // Farmer: manage own produce
   getMyProducts: (): Promise<FarmProductResponse[]> =>
-    fetch(`${FARM_URL}/products/my`, { headers: getAuthHeaders() }).then(r => handleResponse(r)),
+    fetch(`${FARM_URL}/products/my`, { headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
 
   create: (data: FarmProductRequest): Promise<FarmProductResponse> =>
     fetch(`${FARM_URL}/products`, {
-      method: "POST", headers: getAuthHeaders(), body: JSON.stringify(data) }).then(r => handleResponse(r)),
+      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data)
+    }).then(r => handleResponse(r)),
 
   update: (id: number, data: FarmProductRequest): Promise<FarmProductResponse> =>
     fetch(`${FARM_URL}/products/${id}`, {
-      method: "PUT", headers: getAuthHeaders(), body: JSON.stringify(data) }).then(r => handleResponse(r)),
+      method: "PUT", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data)
+    }).then(r => handleResponse(r)),
 
   deactivate: (id: number): Promise<void> =>
     fetch(`${FARM_URL}/products/${id}/deactivate`, {
@@ -249,53 +272,62 @@ export const farmProductService = {
 
   delete: (id: number): Promise<void> =>
     fetch(`${FARM_URL}/products/${id}`, {
-      method: "DELETE", headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      method: "DELETE", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 };
 
 export const farmCartService = {
   getCart: (): Promise<FarmCartResponse> =>
-    fetch(`${FARM_URL}/cart`, { headers: getAuthHeaders() }).then(r => handleResponse(r)),
+    fetch(`${FARM_URL}/cart`, { headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
 
   addItem: (productId: number, quantity: number): Promise<FarmCartResponse> =>
     fetch(`${FARM_URL}/cart/items`, {
-      method: "POST", headers: getAuthHeaders(), body: JSON.stringify({ productId, quantity }) }).then(r => handleResponse(r)),
+      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify({ productId, quantity })
+    }).then(r => handleResponse(r)),
 
   updateItem: (cartItemId: number, quantity: number): Promise<FarmCartResponse> =>
     fetch(`${FARM_URL}/cart/items/${cartItemId}?quantity=${quantity}`, {
-      method: "PUT", headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      method: "PUT", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   removeItem: (cartItemId: number): Promise<FarmCartResponse> =>
     fetch(`${FARM_URL}/cart/items/${cartItemId}`, {
-      method: "DELETE", headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      method: "DELETE", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   clearCart: (): Promise<void> =>
-    fetch(`${FARM_URL}/cart`, { method: "DELETE", headers: getAuthHeaders() }).then(r => handleResponse(r)),
+    fetch(`${FARM_URL}/cart`, { method: "DELETE", headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
 };
 
 export const farmOrderService = {
   // Consumer: buy farm produce
   checkout: (data: FarmCheckoutRequest): Promise<FarmOrderResponse> =>
     fetch(`${FARM_URL}/orders/checkout`, {
-      method: "POST", headers: getAuthHeaders(), body: JSON.stringify(data) }).then(r => handleResponse(r)),
+      method: "POST", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify(data)
+    }).then(r => handleResponse(r)),
 
   // Consumer: own orders
   getMyOrders: (page = 0, size = 10): Promise<Page<FarmOrderResponse>> =>
     fetch(`${FARM_URL}/orders/my?page=${page}&size=${size}`, {
-      headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   getMyOrder: (orderId: number): Promise<FarmOrderResponse> =>
-    fetch(`${FARM_URL}/orders/my/${orderId}`, { headers: getAuthHeaders() }).then(r => handleResponse(r)),
+    fetch(`${FARM_URL}/orders/my/${orderId}`, { headers: getAuthHeaders(), credentials: 'include' }).then(r => handleResponse(r)),
 
   cancelOrder: (orderId: number): Promise<FarmOrderResponse> =>
     fetch(`${FARM_URL}/orders/my/${orderId}/cancel`, {
-      method: "PATCH", headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      method: "PATCH", headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   // Farmer: orders received for their produce
   getReceivedOrders: (page = 0, size = 10): Promise<Page<FarmOrderResponse>> =>
     fetch(`${FARM_URL}/orders/received?page=${page}&size=${size}`, {
-      headers: getAuthHeaders() }).then(r => handleResponse(r)),
+      headers: getAuthHeaders(), credentials: 'include'
+    }).then(r => handleResponse(r)),
 
   updateStatus: (orderId: number, status: FarmOrderStatus): Promise<FarmOrderResponse> =>
     fetch(`${FARM_URL}/orders/${orderId}/status`, {
-      method: "PATCH", headers: getAuthHeaders(), body: JSON.stringify({ status }) }).then(r => handleResponse(r)),
+      method: "PATCH", headers: getAuthHeaders(), credentials: 'include', body: JSON.stringify({ status })
+    }).then(r => handleResponse(r)),
 };

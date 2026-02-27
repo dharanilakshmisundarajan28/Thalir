@@ -8,12 +8,16 @@ import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +34,7 @@ import com.thalir.backend.repository.RoleRepository;
 import com.thalir.backend.repository.UserRepository;
 import com.thalir.backend.security.services.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -46,17 +51,32 @@ public class AuthController {
     @Autowired
     PasswordEncoder encoder;
 
-    // JWT utilities removed; session-based authentication used
+    // Explicitly saves SecurityContext to the HTTP session (required in Spring
+    // Security 6)
+    private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request, HttpServletResponse response) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Error: Invalid username or password"));
+        }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        // ensure session is created
-        request.getSession(true);
+        // Set authentication in the context
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // Explicitly save the SecurityContext to the HTTP session
+        // This is required in Spring Security 6.x to persist the session across
+        // requests
+        securityContextRepository.saveContext(context, request, response);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
@@ -136,7 +156,8 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletRequest request) {
         try {
             request.getSession().invalidate();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(new MessageResponse("Logged out successfully"));
     }

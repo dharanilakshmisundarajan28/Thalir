@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Cloud, Sun, CloudRain, CloudLightning, Wind, Droplets, Loader2, AlertCircle, MapPin } from 'lucide-react';
-import axios from 'axios';
 
 interface WeatherData {
     day: string;
@@ -22,10 +21,13 @@ const DynamicWeather = ({ city = "Mumbai" }: { city?: string }) => {
             try {
                 setLoading(true);
                 // Open-Meteo for Mumbai: 19.0760, 72.8777
-                const res = await axios.get('https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto');
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto');
+                if (!res.ok) throw new Error('Weather API error');
+                const data = await res.json();
+
 
                 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const daily = res.data.daily;
+                const daily = data.daily;
 
                 const formattedData = daily.time.map((dateStr: string, i: number) => {
                     const date = new Date(dateStr);

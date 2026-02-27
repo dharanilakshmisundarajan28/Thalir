@@ -57,8 +57,8 @@ const App = () => {
             </ProtectedRoute>
           }>
             <Route index                      element={<FarmerDashboard />} />
-            <Route path="dashboard"           element={<Orders />} />
-            <Route path="orders"              element={<FarmerDashboard />} />
+            <Route path="dashboard" element={<FarmerDashboard />} />
+            <Route path="orders"    element={<Orders />} />
             <Route path="crop-recommendation" element={<CropRecommendation />} />
             <Route path="mandi-price" element={<MandiPrice/>} />
             <Route path="products" element={<Inventory/>} />

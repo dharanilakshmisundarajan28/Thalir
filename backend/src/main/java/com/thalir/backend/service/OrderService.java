@@ -80,6 +80,7 @@ public class OrderService {
         return toOrderResponse(savedOrder);
     }
 
+    @Transactional(readOnly = true)
     public Page<OrderResponse> getMyOrders(String farmerUsername, int page, int size) {
         User farmer = getUser(farmerUsername);
         Pageable pageable = PageRequest.of(page, size);
@@ -87,6 +88,7 @@ public class OrderService {
                 .map(this::toOrderResponse);
     }
 
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId, String farmerUsername) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -138,6 +140,7 @@ public class OrderService {
         return toOrderResponse(orderRepository.save(order));
     }
 
+    @Transactional(readOnly = true)
     public Page<OrderResponse> getAllOrders(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("orderedAt").descending());
         return orderRepository.findAll(pageable).map(this::toOrderResponse);

@@ -28,12 +28,12 @@ public class FarmOrder {
     private Long id;
 
     // Who placed the order
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "consumer_id", nullable = false)
     private User consumer;
 
     // Which farmer's products are in this order
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "farmer_id", nullable = false)
     private User farmer;
 

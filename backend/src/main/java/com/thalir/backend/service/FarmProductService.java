@@ -71,6 +71,7 @@ public class FarmProductService {
         productRepository.delete(getProductOwnedBy(productId, farmerUsername));
     }
 
+    @Transactional(readOnly = true)
     public List<FarmProductResponse> getMyProducts(String farmerUsername) {
         return productRepository.findByFarmer(getUser(farmerUsername))
                 .stream().map(this::toResponse).collect(Collectors.toList());
@@ -78,24 +79,28 @@ public class FarmProductService {
 
     // ── CONSUMER: browse products ────────────────────────────
 
+    @Transactional(readOnly = true)
     public Page<FarmProductResponse> getAllActiveProducts(int page, int size, String sortBy) {
         return productRepository
                 .findByIsActiveTrue(PageRequest.of(page, size, Sort.by(sortBy).ascending()))
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<FarmProductResponse> getByCategory(String category, int page, int size) {
         return productRepository
                 .findByIsActiveTrueAndCategoryIgnoreCase(category, PageRequest.of(page, size))
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<FarmProductResponse> searchProducts(String keyword, int page, int size) {
         return productRepository
                 .searchByKeyword(keyword, PageRequest.of(page, size))
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<FarmProductResponse> getProductsByFarmer(Long farmerId, int page, int size) {
         User farmer = userRepository.findById(farmerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Farmer not found"));
@@ -104,6 +109,7 @@ public class FarmProductService {
                 .map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public FarmProductResponse getProductById(Long id) {
         return toResponse(productRepository.findById(id)
                 .filter(FarmProduct::getIsActive)
