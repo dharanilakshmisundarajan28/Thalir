@@ -10,6 +10,8 @@ import {
   Bell,
   DollarSign,
   Users,
+  FileText,
+  Store, 
 } from "lucide-react";
 
 import {
@@ -53,6 +55,8 @@ export default function FarmerLayout() {
     { name: "Crop", path: "/farmer/crop-recommendation", icon: Leaf },
     { name: "Mandi Price", path: "/farmer/mandi-price", icon: TrendingUp },
     { name: "Inventory", path: "/farmer/products", icon: Package },
+    { name: "Fertilizer Market", path: "/farmer/fertilizer-market", icon: Store },
+    { name: "Govt Schemes", path: "/farmer/government-schemes", icon: FileText },
     { name: "Settings", path: "/farmer/settings", icon: Settings },
   ];
 

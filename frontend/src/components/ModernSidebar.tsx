@@ -22,6 +22,7 @@ const ModernSidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
         { name: 'Crop Recommendation', icon: <Leaf size={22} />, path: '/farmer/crop-recommendation' },
         { name: 'Mandi Price', icon: <LineChart size={22} />, path: '/farmer/mandi-price' },
         { name: 'Product Management', icon: <Package size={22} />, path: '/farmer/products' },
+        { name: 'Goverment schemes', icon: <Settings size={22} />, path: '/farmer/schemes' },
         { name: 'Settings', icon: <Settings size={22} />, path: '/farmer/settings' },
     ];
 
