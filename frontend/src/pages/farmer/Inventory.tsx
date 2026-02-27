@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   Search, Bell, Plus, Edit2, Trash2, ToggleLeft, ToggleRight,
   Package, AlertTriangle, TrendingUp, ShoppingBag, Tag,
-  ChevronLeft, ChevronRight, LayoutGrid, List, Filter
+  ChevronRight, LayoutGrid, List
 } from "lucide-react";
 
 // ── Data ──────────────────────────────────────────────────────────────────────

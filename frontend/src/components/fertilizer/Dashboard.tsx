@@ -135,8 +135,6 @@ const Dashboard: React.FC = () => {
     o.items.some(i => i.productName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const loading = loadingProducts || loadingOrders;
-
   /* ═══════════════ RENDER ═══════════════ */
   return (
     <div style={{ minHeight: "100vh", background: "#F8F9FB", fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>

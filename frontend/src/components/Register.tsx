@@ -49,7 +49,9 @@ const Register = () => {
 
         AuthService.register(data.username, data.email, data.password, [data.role]).then(
             (response) => {
-                setMessage(response.data.message);
+                // Signup just returns a message, not a token
+                // User needs to login after signup
+                setMessage(response.data.message || "Registration successful! Please sign in with your credentials.");
                 setSuccessful(true);
             },
             (error) => {

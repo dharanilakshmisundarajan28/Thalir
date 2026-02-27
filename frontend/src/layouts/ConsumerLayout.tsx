@@ -1,213 +1,267 @@
-// import { Outlet, Link, Navigate } from 'react-router-dom';
-// import { ShoppingCart, Search, User, Sprout } from 'lucide-react';
-// import AuthService from '../services/auth.service';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  FiHome,
+  FiPackage,
+  FiShoppingCart,
+  FiBarChart,
+  FiSettings,
+  FiLogOut,
+  FiUser,
+} from 'react-icons/fi';
+import AuthService from '../services/auth.service';
 
-// const ConsumerLayout = () => {
-//     const user = AuthService.getCurrentUser();
+type SidebarProps = {
+  activeItem: string;
+  setActiveItem: (item: string) => void;
+};
 
-//     // Guard: Redirect to landing page if no user or incorrect role
-//     if (!user || !user.roles.includes("ROLE_CONSUMER")) {
-//         return <Navigate to="/" replace />;
-//     }
-
-//     const handleLogout = () => {
-//         AuthService.logout();
-//         window.location.href = '/';
-//     };
-
-//     return (
-//         <div className="min-h-screen bg-gray-50 flex flex-col">
-//             {/* Navbar */}
-//             <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-//                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-//                     <div className="flex justify-between h-16">
-
-//                         {/* Logo */}
-//                         <div className="flex items-center">
-//                             <Link to="/consumer/home" className="flex-shrink-0 flex items-center">
-//                                 <Sprout className="h-8 w-8 text-green-600 mr-2" />
-//                                 <span className="text-2xl font-bold text-gray-900">THALIR <span className="text-green-600">Fresh</span></span>
-//                             </Link>
-//                         </div>
-
-//                         {/* Search Bar */}
-//                         <div className="hidden md:flex flex-1 items-center justify-center px-8">
-//                             <div className="w-full max-w-lg relative">
-//                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-//                                     <Search className="h-5 w-5 text-gray-400" />
-//                                 </div>
-//                                 <input
-//                                     type="text"
-//                                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-full leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500 sm:text-sm transition duration-150 ease-in-out"
-//                                     placeholder="Search for fresh fruits, vegetables..."
-//                                 />
-//                             </div>
-//                         </div>
-
-//                         {/* Right Side Icons */}
-//                         <div className="flex items-center space-x-4">
-//                             <Link to="/consumer/cart" className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-green-600 relative">
-//                                 <ShoppingCart className="h-6 w-6" />
-//                                 <span className="absolute top-1 right-1 h-4 w-4 bg-green-600 rounded-full text-[10px] font-bold text-white flex items-center justify-center border-2 border-white">2</span>
-//                             </Link>
-
-//                             <div className="relative group">
-//                                 <button className="flex items-center space-x-2 p-2 rounded-full text-gray-500 hover:bg-gray-100">
-//                                     <User className="h-6 w-6" />
-//                                 </button>
-//                                 {/* Dropdown */}
-//                                 <div className="absolute right-0 w-48 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 ease-in-out">
-//                                     <div className="px-4 py-3">
-//                                         <p className="text-sm leading-5">Signed in as</p>
-//                                         <p className="text-sm font-medium leading-5 text-gray-900 truncate">{user?.username}</p>
-//                                     </div>
-//                                     <div className="py-1">
-//                                         <Link to="/consumer/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Orders</Link>
-//                                         <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
-//                                     </div>
-//                                     <div className="py-1">
-//                                         <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100">Sign out</button>
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         </div>
-
-//                     </div>
-//                 </div>
-//             </nav>
-
-//             {/* Main Content */}
-//             <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//                 <Outlet />
-//             </main>
-
-//             {/* Footer */}
-//             <footer className="bg-white border-t border-gray-200 mt-auto">
-//                 <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-//                     <p className="text-center text-sm text-gray-500">&copy; 2026 THALIR. All rights reserved.</p>
-//                 </div>
-//             </footer>
-//         </div>
-//     );
-// };
-
-// export default ConsumerLayout;
-import { Outlet, Link, Navigate } from "react-router-dom";
-import { ShoppingCart, Search, User, Sprout, Settings, LogOut } from "lucide-react";
-import { useState } from "react";
-import AuthService from "../services/auth.service";
-
-const ConsumerLayout = () => {
-  const user = AuthService.getCurrentUser();
-
-  const [search, setSearch] = useState("");
-  const [cartCount, setCartCount] = useState(0);
-  const [openCart, setOpenCart] = useState(false);
+const Sidebar: React.FC<SidebarProps> = ({ activeItem, setActiveItem }) => {
   const [openProfile, setOpenProfile] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
-  if (!user || !user.roles.includes("ROLE_CONSUMER")) {
-    return <Navigate to="/" replace />;
-  }
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: FiHome },
+    { id: 'products', label: 'Product Management', icon: FiPackage },
+    { id: 'orders', label: 'Order History', icon: FiShoppingCart },
+    { id: 'analytics', label: 'Revenue Analytics', icon: FiBarChart },
+    { id: 'settings', label: 'Settings', icon: FiSettings },
+  ];
+
+  const user = AuthService.getCurrentUser();
 
   const handleLogout = () => {
     AuthService.logout();
-    window.location.href = "/";
+    window.location.href = '/';
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setOpenProfile(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div
+      style={{
+        width: '250px',
+        minHeight: '100vh',
+        background: 'linear-gradient(180deg, #1a2332 0%, #0f1419 100%)',
+        color: '#ffffff',
+        padding: '2rem 1rem',
+        boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+    >
+      <div>
+        {/* Title */}
+        <div
+          style={{
+            fontSize: '1.4rem',
+            fontWeight: 700,
+            marginBottom: '2.5rem',
+            paddingLeft: '1rem',
+            letterSpacing: '1px',
+          }}
+        >
+          THALIR
+        </div>
 
-      {/* ✅ NAVBAR */}
-      <nav className="bg-white border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+        {/* Menu */}
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeItem === item.id;
 
-            {/* LOGO */}
-            <Link to="/consumer/home" className="flex items-center">
-              <Sprout className="h-8 w-8 text-green-600 mr-2" />
-              <span className="text-2xl font-bold">
-                THALIR <span className="text-green-600">Fresh</span>
-              </span>
-            </Link>
-
-            {/* ✅ CENTER SEARCH */}
-            <div className="flex-1 flex justify-center px-6">
-              <div className="w-full max-w-xl relative">
-                <Search className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search fruits, vegetables, grains..."
-                  className="w-full pl-10 pr-3 py-2 border rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-            </div>
-
-            {/* RIGHT */}
-            <div className="flex items-center space-x-4">
-
-              {/* CART */}
-              <button
-                onClick={() => setOpenCart(true)}
-                className="relative p-2 rounded-full hover:bg-gray-100"
-              >
-                <ShoppingCart className="h-6 w-6" />
-
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-green-600 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-
-              {/* PROFILE */}
-              <div className="relative">
-                <button
-                  onClick={() => setOpenProfile(!openProfile)}
-                  className="p-2 rounded-full hover:bg-gray-100"
+            return (
+              <li key={item.id} style={{ margin: '0.5rem 0' }}>
+                <div
+                  onClick={() => setActiveItem(item.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '0.75rem 1rem',
+                    borderRadius: isActive ? '12px' : '6px',
+                    cursor: 'pointer',
+                    fontWeight: isActive ? 600 : 500,
+                    backgroundColor: isActive ? '#2E7D32' : 'transparent',
+                    color: isActive ? '#ffffff' : 'rgba(255,255,255,0.8)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                      e.currentTarget.style.color = '#ffffff';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
+                    }
+                  }}
                 >
-                  <User className="h-6 w-6" />
-                </button>
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
-                {openProfile && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg border p-2">
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm"
-                    >
-                      <Settings size={16} />
-                      Settings
-                    </Link>
+      {/* ✅ PROFILE SECTION AT BOTTOM */}
+      <div ref={profileRef} style={{ position: 'relative' }}>
 
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-sm w-full text-left text-red-600"
-                    >
-                      <LogOut size={16} />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+        {/* Popup — renders ABOVE the profile bar */}
+        {openProfile && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '70px',
+              left: '0',
+              right: '0',
+              backgroundColor: '#1e2d3d',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              padding: '0.5rem',
+              boxShadow: '0 -4px 20px rgba(0,0,0,0.3)',
+            }}
+          >
+            <button
+              onClick={() => {
+                setActiveItem('settings');
+                setOpenProfile(false);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                width: '100%',
+                padding: '0.6rem 0.75rem',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: 'rgba(255,255,255,0.85)',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = 'transparent')
+              }
+            >
+              <FiSettings size={16} />
+              Settings
+            </button>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                width: '100%',
+                padding: '0.6rem 0.75rem',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: '#f87171',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = 'rgba(248,113,113,0.1)')
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = 'transparent')
+              }
+            >
+              <FiLogOut size={16} />
+              Logout
+            </button>
+          </div>
+        )}
+
+        {/* Profile Bar — click to toggle popup */}
+        <div
+          onClick={() => setOpenProfile(!openProfile)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.75rem 1rem',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            backgroundColor: openProfile
+              ? 'rgba(255,255,255,0.08)'
+              : 'transparent',
+            border: '1px solid rgba(255,255,255,0.08)',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = openProfile
+              ? 'rgba(255,255,255,0.08)'
+              : 'transparent')
+          }
+        >
+          {/* Avatar circle */}
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: '#2E7D32',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <FiUser size={18} color="#fff" />
+          </div>
+
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <div
+              style={{
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {user?.username ?? 'Admin'}
+            </div>
+            <div
+              style={{
+                fontSize: '0.7rem',
+                color: 'rgba(255,255,255,0.5)',
+              }}
+            >
+              {user?.roles?.[0]?.replace('ROLE_', '') ?? 'User'}
             </div>
           </div>
         </div>
-      </nav>
-
-      {/* ✅ CONTENT */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        <Outlet
-          context={{
-            search,
-            cartCount,
-            setCartCount,
-            openCart,
-            setOpenCart,
-          }}
-        />
-      </main>
+      </div>
     </div>
   );
 };
 
-export default ConsumerLayout;
+export default Sidebar;

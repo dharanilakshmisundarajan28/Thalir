@@ -109,7 +109,7 @@
 // export default ConsumerDashboard;
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Plus, Heart, ShoppingCart, X, Minus } from "lucide-react";
+import { Star, Plus, Heart, X, Minus } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 
 /* ================= IMAGE HELPER ================= */

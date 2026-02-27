@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
-  Search, Bell, ShoppingCart, Star, Filter,
+  Search, Bell, ShoppingCart, Star,
   Plus, Minus, X, MapPin, Truck, Shield,
-  ChevronRight, Package, Leaf, Zap, CheckCircle
+  Package, Leaf, Zap, CheckCircle
 } from "lucide-react";
 
 // ── Data ──────────────────────────────────────────────────────────────────────

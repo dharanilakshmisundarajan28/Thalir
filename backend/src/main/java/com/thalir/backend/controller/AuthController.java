@@ -14,7 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +24,13 @@ import com.thalir.backend.model.Role;
 import com.thalir.backend.model.User;
 import com.thalir.backend.payload.request.LoginRequest;
 import com.thalir.backend.payload.request.SignupRequest;
-import com.thalir.backend.payload.response.JwtResponse;
 import com.thalir.backend.payload.response.MessageResponse;
+import com.thalir.backend.payload.response.LoginResponse;
 import com.thalir.backend.repository.RoleRepository;
 import com.thalir.backend.repository.UserRepository;
-import com.thalir.backend.security.jwt.JwtUtils;
 import com.thalir.backend.security.services.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -48,28 +46,29 @@ public class AuthController {
     @Autowired
     PasswordEncoder encoder;
 
-    @Autowired
-    JwtUtils jwtUtils;
+    // JWT utilities removed; session-based authentication used
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        // ensure session is created
+        request.getSession(true);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponse(jwt,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
-                roles));
+        LoginResponse resp = new LoginResponse();
+        resp.setUserId(userDetails.getId());
+        resp.setUsername(userDetails.getUsername());
+        resp.setRoles(roles);
+        resp.setMessage("Login successful");
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/signup")
@@ -131,5 +130,14 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        try {
+            request.getSession().invalidate();
+        } catch (Exception ignored) {}
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(new MessageResponse("Logged out successfully"));
     }
 }

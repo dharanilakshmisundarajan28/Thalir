@@ -1,9 +1,6 @@
 import {
     Search,
-    Filter,
     MoreVertical,
-    ChevronLeft,
-    ChevronRight,
     ExternalLink
 } from 'lucide-react';
 

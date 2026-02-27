@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
-  Search, Bell, Eye, CheckCircle, XCircle, Clock,
-  Truck, Package, TrendingUp, ShoppingCart, ChevronRight,
-  Filter, Download, RefreshCw, MapPin, Calendar, User
+  Search, Bell, Download,
+  Truck, TrendingUp, ShoppingCart, CheckCircle, XCircle, Clock, RefreshCw,
+  MapPin, Calendar, User, Package, Filter, Eye, ChevronRight
 } from "lucide-react";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ const ORDERS = [
     id: "ORD-2025-003", buyer: "Meena Devi", location: "Patiala, Punjab",
     product: "Urea (46% Nitrogen)", category: "Fertilizers",
     qty: 20, unit: "bags", amount: 5340, date: "26 Feb 2025",
-    status: "Processing", avatar: "MD", emoji: "🌿",
+    status: "Processing", avatar: "MD",  emoji: "🌿",
   },
   {
     id: "ORD-2025-004", buyer: "Harpreet Kaur", location: "Jalandhar, Punjab",
@@ -45,18 +45,6 @@ const ORDERS = [
     product: "Drip Irrigation Kit (1 acre)", category: "Equipment",
     qty: 2, unit: "kits", amount: 17000, date: "24 Feb 2025",
     status: "Delivered", avatar: "BP", emoji: "💧",
-  },
-  {
-    id: "ORD-2025-007", buyer: "Rajesh Sharma", location: "Sangrur, Punjab",
-    product: "Chlorpyrifos Insecticide", category: "Pesticides",
-    qty: 5, unit: "litres", amount: 2900, date: "24 Feb 2025",
-    status: "Processing", avatar: "RS", emoji: "🛡️",
-  },
-  {
-    id: "ORD-2025-008", buyer: "Anita Bai", location: "Moga, Punjab",
-    product: "Manual Seed Drill", category: "Equipment",
-    qty: 1, unit: "piece", amount: 3500, date: "23 Feb 2025",
-    status: "Shipped", avatar: "AB", emoji: "🔧",
   },
 ];
 
@@ -115,7 +103,7 @@ function OrderModal({ order, onClose }: { order: typeof ORDERS[0]; onClose: () =
             return (
               <div key={row.label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-slate-500">
-                  <Icon size={13} />
+                  <Icon size={13}/>
                   <span className="text-xs font-semibold">{row.label}</span>
                 </div>
                 <span className="text-sm font-bold text-slate-800">{row.value}</span>
@@ -124,26 +112,10 @@ function OrderModal({ order, onClose }: { order: typeof ORDERS[0]; onClose: () =
           })}
         </div>
 
-        {order.status !== "Delivered" && order.status !== "Cancelled" && (
-          <div className="mb-4">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Update Status</label>
-            <select className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-green-400 transition-colors">
-              {["Processing", "Shipped", "Delivered"].map(s => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
             Close
           </button>
-          {order.status !== "Delivered" && order.status !== "Cancelled" && (
-            <button onClick={onClose} className="flex-1 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-500 rounded-xl transition-colors">
-              Update Order
-            </button>
-          )}
         </div>
       </div>
     </div>
